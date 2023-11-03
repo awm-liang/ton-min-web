@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useIsConnectionRestored, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react";
-import { bindWallet, generatePayload } from "@/utils/request";
+import { registerUser, generatePayload } from "@/utils/request";
 import WebApp from "@twa-dev/sdk";
 
 const localStorageKey = 'my-dapp-auth-token';
@@ -9,7 +9,7 @@ const payloadTTLMS = 1000 * 60 * 20;
 export function useBackendAuth() {
     const isConnectionRestored = useIsConnectionRestored();
     const wallet = useTonWallet();
-    const [, setToken] = useState<null | string>(null);
+    const [token, setToken] = useState<null | string>(null);
     const [tonConnectUI] = useTonConnectUI();
     const interval = useRef<ReturnType<typeof setInterval> | undefined>();
 
@@ -20,22 +20,22 @@ export function useBackendAuth() {
 
         clearInterval(interval.current);
 
+        const user: any = WebApp.initDataUnsafe.user;
+        if(!user) return
+
         if (!wallet) {
             localStorage.removeItem(localStorageKey);
             setToken(null);
 
             const refreshPayload = async () => {
                 tonConnectUI.setConnectRequestParameters({ state: 'loading' });
-                const res = await generatePayload("123123123");
+                const res = await generatePayload(user.id);
+                tonConnectUI.setConnectRequestParameters(null);
                 if (res.code === 0) {
                     WebApp.showAlert(res.msg)
                 }
                 const value = { tonProof: res.data };
-                if (!value) {
-                    tonConnectUI.setConnectRequestParameters(null);
-                } else {
-                    tonConnectUI.setConnectRequestParameters({ state: 'ready', value });
-                }
+                tonConnectUI.setConnectRequestParameters({ state: 'ready', value });
             }
 
             refreshPayload();
@@ -50,7 +50,8 @@ export function useBackendAuth() {
         }
 
         if (wallet.connectItems?.tonProof && !('error' in wallet.connectItems.tonProof)) {
-            bindWallet(wallet).then(walletRes => {
+            registerUser(wallet, user).then(walletRes => {
+                tonConnectUI.setConnectRequestParameters(null)
                 console.log(walletRes, 'walletRes')
                 if (walletRes.code === 1) {
                     const _token = walletRes.data.parsedMessage.Payload;
@@ -68,4 +69,7 @@ export function useBackendAuth() {
         }
 
     }, [wallet, isConnectionRestored, setToken])
+
+
+    return token
 }

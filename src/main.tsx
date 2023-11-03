@@ -7,7 +7,7 @@ import App from './App.tsx'
 import './index.css'
 import WebApp from '@twa-dev/sdk'
 import eruda from 'eruda'
-import { TonConnectUIProvider } from '@tonconnect/ui-react';
+import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
 
 eruda.init()
 WebApp.ready()
@@ -15,7 +15,11 @@ WebApp.ready()
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <TonConnectUIProvider
-    manifestUrl="https://ton-connect.github.io/demo-dapp-with-wallet/tonconnect-manifest.json"
+    uiPreferences={{ theme: THEME.DARK }}
+    manifestUrl="https://raw.githubusercontent.com/ton-community/tutorials/main/03-client/test/public/tonconnect-manifest.json"
+    actionsConfiguration={{
+      twaReturnUrl: "https://t.me/ton_min_bot/ton_min_bot"
+    }}
   >
     <RecoilRoot>
       <ConfigProvider>

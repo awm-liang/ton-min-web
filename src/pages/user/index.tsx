@@ -1,92 +1,11 @@
 import WebApp from "@twa-dev/sdk";
-import {  List } from "antd";
-import axios from "axios";
-import { useCallback, useEffect } from "react";
+import { List, Button } from "antd";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBackendAuth } from "@/hooks/useBackendAuto";
-
-const host = "http://localhost:30012/";
-
-export const initData = [
-    {
-        id: "2135880157",
-        gender: "",
-        name: {
-            title: "dappleN",
-            first: "DappleN",
-            last: "",
-        },
-        email: "",
-        picture: "",
-    },
-
-    {
-        id: "21358280157",
-        gender: "",
-        name: {
-            title: "charggggg",
-            first: "Charlie",
-            last: "M",
-        },
-        email: "",
-        picture: "",
-    },
-    {
-        id: "2135880159",
-        gender: "",
-        name: {
-            title: "satrsong",
-            first: "STAR",
-            last: "SONG",
-        },
-        email: "",
-        picture: "",
-    },
-    {
-        id: "2135880177",
-        gender: "",
-        name: {
-            title: "Aaronchen88",
-            first: "Aaron",
-            last: "aa",
-        },
-        email: "",
-        picture: "",
-    },
-    {
-        id: "5985506262",
-        gender: "",
-        name: {
-            title: "lan_666666",
-            first: "WORLD",
-            last: "PEACE",
-        },
-        email: "",
-        picture: "",
-    },
-    {
-        id: "2135880156",
-        gender: "",
-        name: {
-            title: "HaoJingWuDi666",
-            first: "昊京无敌666",
-            last: "",
-        },
-        email: "",
-        picture: "",
-    },
-    {
-        id: "21358801717",
-        gender: "",
-        name: {
-            title: "jiapai",
-            first: "Pie",
-            last: "",
-        },
-        email: "",
-        picture: "",
-    },
-];
+import { checkUser, getUserList } from "@/utils/request";
+import { useTonConnectUI, useTonWallet } from "@tonconnect/ui-react";
+import { generatePayload } from "@/utils/request";
 
 export const colorList = [
     {
@@ -115,27 +34,31 @@ export const colorList = [
     },
 ];
 
-// interface DataType {
-//     id: string;
-//     gender?: string;
-//     name: {
-//         title?: string;
-//         first?: string;
-//         last?: string;
-//     };
-//     email?: string;
-//     picture: string;
-//     nat?: string;
-//     loading: boolean;
-// }
+export interface UserItemType {
+    id: string;
+    gender?: string;
+    name: {
+        username?: string;
+        first?: string;
+        last?: string;
+    };
+    email?: string;
+    picture: string;
+    nat?: string;
+    loading: boolean;
+}
 
 const User = () => {
     const nav = useNavigate();
 
-    // const [initLoading, setInitLoading] = useState(true);
+    const wallet = useTonWallet();
+
+    const [initLoading, setInitLoading] = useState(false);
     // const [loading, setLoading] = useState(false);
-    // const [data, setData] = useState<DataType[]>([]);
+    const [data, setData] = useState<UserItemType[]>([]);
     // const [list, setList] = useState<DataType[]>([]);
+
+    const [tonConnectUI] = useTonConnectUI();
 
     const showLoginBtn = useCallback(() => {
         WebApp.MainButton.color = "#4158D0";
@@ -145,16 +68,20 @@ const User = () => {
 
     useEffect(() => {
         WebApp.BackButton.hide();
-        showLoginBtn();
 
-        const join = () => {
-            const user = WebApp.initDataUnsafe.user;
-            const param = `?id=${user!.id}&username=${user?.username}&first_name=${user?.first_name
-                }&last_name=${user?.last_name}`;
-            axios.get(`${host}/join${param}`).then((res) => {
-                console.log(res, "res");
+        const user = WebApp.initDataUnsafe.user;
+        if (user) {
+            checkUser(user!.id.toString()).then((res) => {
+                if (res.code === 1 && res.data === 0) {
+                    showLoginBtn();
+                }
             });
+        }
+
+        const join = async () => {
+            await tonConnectUI.connectWallet();
         };
+
         WebApp.onEvent("mainButtonClicked", join);
 
         return () => {
@@ -162,35 +89,55 @@ const User = () => {
         };
     }, []);
 
-    useEffect(() => {
-        // fetch(`${host}/user-list`)
-        //     .then((res) => res.json())
-        //     .then((res) => {
-        //         setInitLoading(false);
-        //         setData(res.results);
-        //         setList(res.results);
-        //     });
-    }, []);
+    const token = useBackendAuth();
 
-    useBackendAuth();
+    useEffect(() => {
+        setInitLoading(true);
+        getUserList().then((res) => {
+            setInitLoading(false);
+            if (res.code === 1) {
+                setData(res.data);
+            }
+            console.log(res)
+        });
+        const user = WebApp.initDataUnsafe.user;
+        if (user) {
+            checkUser(user!.id.toString()).then((res) => {
+                if (res.code === 1 && res.data === 0) {
+                    showLoginBtn();
+                } else {
+                    WebApp.MainButton.hide()
+                }
+            });
+        }
+    }, [token])
 
     return (
-        <div>
-            
+        <div className="mt-[60px]">
             <List
-                // loading={initLoading}
+                loading={initLoading}
                 itemLayout="horizontal"
-                className="mt-[90px]"
                 // loadMore={loadMore}
-                dataSource={initData}
+                dataSource={data}
                 renderItem={(item) => (
                     <List.Item
                         actions={[
                             <div className="w-[30px] h-[30px]">
-                                <svg fill="none" stroke="currentColor" strokeWidth={0.6} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                <svg
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={0.6}
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                    />
                                 </svg>
-                            </div>
+                            </div>,
                         ]}
                         onClick={() => nav(`/user-detail/${item.id}`)}
                     >
@@ -203,7 +150,7 @@ const User = () => {
                                 />
                             }
                             title={<span>{item.name?.first + " " + item.name?.last}</span>}
-                            description={`@${item.name.title}`}
+                            description={`@${item.name.username}`}
                         />
                     </List.Item>
                 )}
