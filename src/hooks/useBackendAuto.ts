@@ -3,6 +3,7 @@ import { useIsConnectionRestored, useTonConnectUI, useTonWallet } from "@tonconn
 import { registerUser, generatePayload } from "@/utils/request";
 import WebApp from "@twa-dev/sdk";
 
+
 const localStorageKey = 'my-dapp-auth-token';
 const payloadTTLMS = 1000 * 60 * 20;
 
@@ -21,7 +22,7 @@ export function useBackendAuth() {
         clearInterval(interval.current);
 
         const user: any = WebApp.initDataUnsafe.user;
-        if(!user) return
+        if (!user) return
 
         if (!wallet) {
             localStorage.removeItem(localStorageKey);
@@ -48,20 +49,21 @@ export function useBackendAuth() {
             setToken(token);
             return;
         }
+        
 
         if (wallet.connectItems?.tonProof && !('error' in wallet.connectItems.tonProof)) {
-            registerUser(wallet, user).then(walletRes => {
-                tonConnectUI.setConnectRequestParameters(null)
-                console.log(walletRes, 'walletRes')
-                if (walletRes.code === 1) {
-                    const _token = walletRes.data.parsedMessage.Payload;
-                    setToken(_token)
-                    localStorage.setItem(localStorageKey, _token);
-                } else {
-                    tonConnectUI.disconnect();
-                    WebApp.showAlert(walletRes.msg);
-                }
-            })
+            // registerUser(wallet, user).then(walletRes => {
+            //     tonConnectUI.setConnectRequestParameters(null)
+            //     console.log(walletRes, 'walletRes')
+            //     if (walletRes.code === 1) {
+            //         const _token = walletRes.data.parsedMessage.Payload;
+            //         setToken(_token)
+            //         localStorage.setItem(localStorageKey, _token);
+            //     } else {
+            //         tonConnectUI.disconnect();
+            //         WebApp.showAlert(walletRes.msg);
+            //     }
+            // })
 
         } else {
             WebApp.showAlert('Please try another wallet');
