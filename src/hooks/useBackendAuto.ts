@@ -35,8 +35,8 @@ export function useBackendAuth() {
                 if (res.code === 0) {
                     WebApp.showAlert(res.msg)
                 }
-                const value = { tonProof: res.data };
-                tonConnectUI.setConnectRequestParameters({ state: 'ready', value });
+                // const value = { tonProof: res.data };
+                // tonConnectUI.setConnectRequestParameters({ state: 'ready', value });
             }
 
             refreshPayload();
@@ -66,8 +66,8 @@ export function useBackendAuth() {
             // })
 
         } else {
-            WebApp.showAlert('Please try another wallet');
-            tonConnectUI.disconnect();
+            // WebApp.showAlert('Please try another wallet');
+            // tonConnectUI.disconnect();
         }
 
     }, [wallet, isConnectionRestored, setToken])

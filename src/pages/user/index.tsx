@@ -76,9 +76,7 @@ const User = () => {
 
         const walletList = await connect.getWallets()
 
-        const walletUrl: any = await connect.connect(walletList[0], {
-            tonProof: "123123"
-        })
+        const walletUrl: any = await connect.connect(walletList[0])
 
 
         // https://t.me/wallet?attach=wallet&startattach=tonconnect-v__2-id__e2c9aca16c2905929380ed69b5b2c851a37910a2bf5e38a220e11cb5da384717-r__--7B--22manifestUrl--22--3A--22https--3A--2F--2Fraw--2Egithubusercontent--2Ecom--2Fton--2Dcommunity--2Ftutorials--2Fmain--2F03--2Dclient--2Ftest--2Fpublic--2Ftonconnect--2Dmanifest--2Ejson--22--2C--22items--22--3A--5B--7B--22name--22--3A--22ton--5Faddr--22--7D--5D--7D
@@ -130,32 +128,32 @@ const User = () => {
         };
     }, []);
 
-    const token = useBackendAuth();
+    // const token = useBackendAuth();
 
     console.log(wallet, 'walletINfo2')
 
     console.log(tonConnectUI.wallet, 'op')
 
-    useEffect(() => {
-        setInitLoading(true);
-        getUserList().then((res) => {
-            setInitLoading(false);
-            if (res.code === 1) {
-                setData(res.data);
-            }
-            console.log(res)
-        });
-        const user = WebApp.initDataUnsafe.user;
-        if (user) {
-            checkUser(user!.id.toString()).then((res) => {
-                if (res.code === 1 && res.data === 0) {
-                    showLoginBtn();
-                } else {
-                    // WebApp.MainButton.hide()
-                }
-            });
-        }
-    }, [token])
+    // useEffect(() => {
+    //     setInitLoading(true);
+    //     getUserList().then((res) => {
+    //         setInitLoading(false);
+    //         if (res.code === 1) {
+    //             setData(res.data);
+    //         }
+    //         console.log(res)
+    //     });
+    //     const user = WebApp.initDataUnsafe.user;
+    //     if (user) {
+    //         checkUser(user!.id.toString()).then((res) => {
+    //             if (res.code === 1 && res.data === 0) {
+    //                 showLoginBtn();
+    //             } else {
+    //                 // WebApp.MainButton.hide()
+    //             }
+    //         });
+    //     }
+    // }, [token])
 
     return (
         <div className="mt-[60px]">

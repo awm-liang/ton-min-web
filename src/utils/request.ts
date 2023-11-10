@@ -3,7 +3,7 @@ import axios from 'axios'
 
 
 // const host = "http://localhost:30012"
-const host = "https://2a15-240e-3b6-30f2-b930-b51e-2968-b47-21f3.ngrok-free.app"
+const host = "https://7b53-240e-3b6-30f0-4030-91ab-c429-27c2-2bd5.ngrok-free.app"
 
 axios.interceptors.response.use((response) => {
     return response.data
